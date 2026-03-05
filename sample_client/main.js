@@ -4,7 +4,7 @@ document.body.addEventListener("htmx:afterRequest", function(evt) {
 
         const response = JSON.parse(evt.detail.xhr.responseText)
 
-        renderChart(response.code)
+        renderChart(JSON.parse(response.code))
 
     }
 
@@ -14,7 +14,7 @@ function renderChart(code) {
 
     console.log("Received chart data:", code)
 
-    const data = code.chart
+    const data = code.data
     const width = code.width || 600
     const height = code.height || 400
     const margin = code.margin || { top: 20, right: 20, bottom: 20, left: 20 }
