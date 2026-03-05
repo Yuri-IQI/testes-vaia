@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+
+    <style>
+        #chart {
+            width: 600px;
+            height: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>AI Chart Generator</h2>
+
+    <form 
+        hx-post="http://localhost:8000/generate"
+        hx-ext="json-enc"
+        hx-target="#response"
+    >
+        <textarea name="context" placeholder="Context"></textarea>
+        <input name="prompt" type="text" placeholder="Describe chart">
+        <button type="submit">Generate</button>
+    </form>
+
+    <div id="chart"></div>
+    <div id="response"></div>
+
+    <script src="main.js"></script>
+</body>
+</html>
