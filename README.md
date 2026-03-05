@@ -7,7 +7,7 @@ O objetivo é avaliar a capacidade do modelo de gerar código para criação de 
 
 ---
 
-# Configuração do Ambiente
+## Configuração do Ambiente
 
 Antes de executar qualquer script, é necessário criar e ativar um ambiente virtual.
 
@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 ---
 
-# Matplotlib
+## Matplotlib
 
 No arquivo `matplot.py` há um script simples que utiliza um loop para enviar um prompt ao assistente.  
 Caso ocorra algum erro durante a execução do código gerado, o script tenta novamente informando a mensagem de erro ao modelo.
@@ -51,7 +51,7 @@ python -m matplot.py
 
 ---
 
-# Streamlit
+## Streamlit
 
 No arquivo `app.py` existe uma aplicação simples construída com **Streamlit**.
 
@@ -66,7 +66,7 @@ streamlit run app.py
 
 ---
 
-# API + D3.js
+## API + D3.js
 
 O arquivo `api.py` contém uma API construída com **FastAPI** que disponibiliza um endpoint para geração de código utilizando o modelo de IA.
 
@@ -80,7 +80,7 @@ Essa abordagem apresenta maior complexidade em comparação às anteriores, prin
 
 ---
 
-## Executando a API
+### Executando a API
 
 Inicie a API com:
 
@@ -90,7 +90,7 @@ uvicorn api:app --reload
 
 ---
 
-## Executando o cliente web de exemplo
+### Executando o cliente web de exemplo
 
 Abra outro terminal e execute:
 
@@ -123,7 +123,7 @@ http://localhost:8080
 
 ---
 
-# Modelo Utilizado
+## Modelo Utilizado
 
 O projeto utiliza o modelo:
 
@@ -133,6 +133,6 @@ Esse é um modelo leve voltado para geração de código, capaz de produzir scri
 
 ---
 
-# Objetivo
+## Objetivo
 
 O objetivo principal deste repositório é investigar o uso de **modelos de linguagem pequenos (SLMs)** na geração automática de visualizações de dados e avaliar diferentes abordagens de integração com ferramentas de visualização.
