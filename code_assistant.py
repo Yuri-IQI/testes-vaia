@@ -1,5 +1,7 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import json
 import torch
+import re
 
 load_in_8bit=True
 
@@ -10,7 +12,7 @@ class CodeAssistant:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype="auto",
+            dtype=torch.float32,
             device_map="auto"
         )
 
@@ -21,20 +23,15 @@ class CodeAssistant:
             {"role": "user", "content": prompt}
         ]
 
-        text = self.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
-        )
-
-        inputs = self.tokenizer(text, return_tensors="pt").to(self.model.device)
+        inputs = self.tokenizer(prompt, return_tensors="pt")
 
         outputs = self.model.generate(
             **inputs,
-            max_new_tokens=500
+            max_new_tokens=300,
+            temperature=0.1,
+            do_sample=True,
+            top_p=0.9,
+            eos_token_id=self.tokenizer.convert_tokens_to_ids("}")
         )
 
         return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-    
-    def parse_code(self, language: str, code: str):
-        return code.split(f"```{language}")[-1].split("```")[0]
