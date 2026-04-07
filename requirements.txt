@@ -1,0 +1,9 @@
+accelerate>=0.28
+fastapi>=0.110
+matplotlib>=3.8
+pandas>=2.2
+plotly>=5.20
+streamlit>=1.32
+torch>=2.2
+transformers>=4.40
+uvicorn[standard]>=0.29
