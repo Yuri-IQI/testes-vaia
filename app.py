@@ -1,131 +1,128 @@
+from __future__ import annotations
+
+from pathlib import Path
+
 import streamlit as st
-from code_assistant import CodeAssistant
-from plotly import express as px
-from examples import bar_chart_exp, line_chart_exp
-from json_parser import extract_json, parse_json
+
+from chart_pipeline import ChartPipeline
+from chart_utils import build_plotly_figure, load_csv_dataset, summarize_dataframe
+
+
+st.set_page_config(page_title="VAIA Dataset Assistant", layout="wide")
+
+PROJECT_DIR = Path(__file__).resolve().parent
+SAMPLE_DATASET_PATH = PROJECT_DIR / "sample_data" / "sample_sales_data.csv"
+
 
 @st.cache_resource
-def load_assistant():
-    return CodeAssistant()
+def load_pipeline() -> ChartPipeline:
+    return ChartPipeline()
 
-assistant = load_assistant()
 
-st.title("Streamlit App")
+@st.cache_data
+def load_sample_dataset():
+    return load_csv_dataset(SAMPLE_DATASET_PATH)
 
-context = """
-    You are a JSON generator.
 
-    Return ONLY valid JSON.
+@st.cache_data
+def load_sample_dataset_bytes() -> bytes:
+    return SAMPLE_DATASET_PATH.read_bytes()
 
-    STRICT RULES:
-    - No markdown
-    - No ``` blocks
-    - No explanations
-    - No text before or after JSON
-    - Output must start with { and end with }
 
-    JSON must contain ONLY:
-    - numbers
-    - strings
-    - arrays
+def resolve_dataset(uploaded_file, use_sample_dataset: bool):
+    try:
+        if uploaded_file is not None:
+            return load_csv_dataset(uploaded_file.getvalue()), uploaded_file.name, None
 
-    DO NOT generate code like Math.pow or loops.
-"""
+        if use_sample_dataset:
+            return load_sample_dataset(), SAMPLE_DATASET_PATH.name, None
 
-user_input = st.text_input("Prompt")
+        return None, None, None
+    except Exception as exc:
+        return None, None, str(exc)
 
-def build_prompt(user_input):
-    return f"""
-        You are a system that generates chart JSON.
 
-        Return ONLY valid JSON.
+pipeline = load_pipeline()
 
-        Rules:
-        - No markdown
-        - No explanations
-        - Output must start with {{ and end with }}
-        - Values must be explicit numbers
+st.title("VAIA - Visualizacao assistida por IA para datasets")
+st.caption(
+    "Faça upload de um CSV financeiro, escreva seu pedido em linguagem natural e "
+    "receba uma especificação de gráfico baseada apenas nas colunas reais do dataset."
+)
 
-        Format:
-        {{
-        "type": "bar" | "line" | "pie",
-        "labels": string[],
-        "values": number[],
-        "title": string
-        }}
+with st.sidebar:
+    st.subheader("Dataset")
+    use_sample_dataset = st.checkbox("Usar dataset de exemplo embutido", value=True)
+    st.download_button(
+        "Baixar dataset de exemplo",
+        data=load_sample_dataset_bytes(),
+        file_name=SAMPLE_DATASET_PATH.name,
+        mime="text/csv",
+    )
 
-        Examples:
+    st.subheader("Prompts sugeridos")
+    st.write("Compare total sales by country in a bar chart and split by product line.")
+    st.write("Show the sales trend over time in a line chart.")
+    st.write("Show how each product line contributes to total sales in a pie chart.")
 
-        Input: bar chart with values 10, 20, 30
-        Output:
-        {{"type":"bar","labels":["A","B","C"],"values":[10,20,30],"title":"Bar chart"}}
 
-        Input: line chart with values jan, feb: 5, 8
-        Output:
-        {{"type":"line","labels":["jan","feb"],"values":[5,8],"title":"Sales"}}
+uploaded_file = st.file_uploader("Upload de dataset CSV", type=["csv"])
+dataset, dataset_name, dataset_error = resolve_dataset(uploaded_file, use_sample_dataset)
 
-        Now generate the JSON for:
+if dataset_error:
+    st.error(f"Não foi possível carregar o dataset: {dataset_error}")
+elif dataset is None:
+    st.info("Envie um arquivo CSV ou marque a opção para usar o dataset de exemplo.")
+else:
+    summary = summarize_dataframe(dataset)
 
-        {user_input}
-    """
-    
-def validate(data):
-    required = ["type", "labels", "values", "title"]
+    col_a, col_b, col_c = st.columns(3)
+    col_a.metric("Linhas", summary["row_count"])
+    col_b.metric("Colunas", summary["column_count"])
+    col_c.metric("Dataset ativo", dataset_name)
 
-    if data["type"] not in ["bar", "line", "pie"]:
-        return False, "Invalid type"
+    with st.expander("Pré-visualização do dataset", expanded=True):
+        st.dataframe(dataset.head(20), use_container_width=True)
 
-    if not all(isinstance(v, (int, float)) for v in data["values"]):
-        return False, "Values should be numbers"
+    with st.expander("Resumo do dataset"):
+        st.json(summary)
 
-    for key in required:
-        if key not in data:
-            return False, f"Missing {key}"
 
-    if data["type"] not in ["bar", "line", "pie"]:
-        return False, "Invalid type"
+user_prompt = st.text_area(
+    "Pedido em linguagem natural",
+    height=120,
+    placeholder="Exemplo: Compare total sales by country in a bar chart and split by product line.",
+)
 
-    if len(data["labels"]) != len(data["values"]):
-        return False, "Labels and values mismatch"
+generate = st.button("Gerar visualização", type="primary")
 
-    return True, None
-
-def render_chart(data):
-    if data["type"] == "bar":
-        fig = px.bar(x=data["labels"], y=data["values"], title=data.get("title"))
-
-    elif data["type"] == "line":
-        fig = px.line(x=data["labels"], y=data["values"], title=data.get("title"))
-
-    elif data["type"] == "pie":
-        fig = px.pie(names=data["labels"], values=data["values"], title=data.get("title"))
-
+if generate:
+    if dataset is None:
+        st.error("Carregue um dataset CSV antes de gerar o gráfico.")
+    elif not user_prompt.strip():
+        st.error("Digite um pedido para gerar o gráfico.")
     else:
-        return None
+        try:
+            result = pipeline.generate_visualization(dataset, user_prompt)
+            figure = build_plotly_figure(result.plot_frame, result.spec)
 
-    return fig
+            st.info(f"Fonte da especificação: {result.source}")
+            st.plotly_chart(figure, use_container_width=True)
 
-if user_input:
-    response = assistant.generate_code(context, build_prompt(user_input))
-    print("Raw response:", response)
-    
-    json_str = extract_json(response)
-    print("Extracted JSON string:", json_str)
-    
-    data = None
-    if not json_str:
-        st.error("Não foi possível extrair JSON")
-    else:
-        data = parse_json(json_str)
+            spec_col, data_col = st.columns(2)
 
-    if not data:
-        st.error("Erro ao interpretar JSON")
-    else:
-        st.json(data)
-        valid, error = validate(data)
+            with spec_col:
+                st.subheader("Especificação JSON")
+                st.json(result.spec.to_dict())
 
-        if not valid:
-            st.error(error)
-        else:
-            fig = render_chart(data)
-            st.plotly_chart(fig)
+            with data_col:
+                st.subheader("Dados agregados usados no gráfico")
+                st.dataframe(result.plot_frame, use_container_width=True)
+
+            with st.expander("Resposta bruta do modelo"):
+                st.code(result.raw_response or "Sem resposta bruta do modelo.", language="json")
+
+            if result.warnings:
+                st.warning("\n".join(result.warnings))
+        except Exception as exc:
+            st.error(f"Não foi possível gerar a visualização: {exc}")
