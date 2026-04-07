@@ -1,131 +1,85 @@
+from __future__ import annotations
+
+import plotly.graph_objects as go
 import streamlit as st
-from code_assistant import CodeAssistant
-from plotly import express as px
-from examples import bar_chart_exp, line_chart_exp
-from json_parser import extract_json, parse_json
+
+from chart_pipeline import ChartPipeline
+
+
+st.set_page_config(page_title="VAIA", layout="wide")
+
 
 @st.cache_resource
-def load_assistant():
-    return CodeAssistant()
+def load_pipeline() -> ChartPipeline:
+    return ChartPipeline()
 
-assistant = load_assistant()
 
-st.title("Streamlit App")
+def render_chart(chart) -> go.Figure:
+    figure = go.Figure()
 
-context = """
-    You are a JSON generator.
+    if chart.chart_type == "bar":
+        figure.add_bar(x=chart.labels, y=chart.values, marker_color="#2563eb")
+    elif chart.chart_type == "line":
+        figure.add_scatter(
+            x=chart.labels,
+            y=chart.values,
+            mode="lines+markers",
+            line={"color": "#0f766e", "width": 3},
+            marker={"size": 8},
+        )
+    elif chart.chart_type == "pie":
+        figure.add_pie(labels=chart.labels, values=chart.values, hole=0.25)
 
-    Return ONLY valid JSON.
+    figure.update_layout(
+        title=chart.title,
+        template="plotly_white",
+        margin={"l": 24, "r": 24, "t": 60, "b": 24},
+    )
 
-    STRICT RULES:
-    - No markdown
-    - No ``` blocks
-    - No explanations
-    - No text before or after JSON
-    - Output must start with { and end with }
+    return figure
 
-    JSON must contain ONLY:
-    - numbers
-    - strings
-    - arrays
 
-    DO NOT generate code like Math.pow or loops.
-"""
+pipeline = load_pipeline()
 
-user_input = st.text_input("Prompt")
+st.title("VAIA - Visualizacao Assistida por IA")
+st.caption(
+    "Descreva um grafico em linguagem natural. O sistema tenta usar o modelo "
+    "Qwen localmente e faz fallback para uma heuristica quando necessario."
+)
 
-def build_prompt(user_input):
-    return f"""
-        You are a system that generates chart JSON.
+with st.sidebar:
+    st.subheader("Sugestoes")
+    st.write("bar chart with values sales: 12, support: 7, product: 15")
+    st.write("line chart with values jan: 5, feb: 8, mar: 13")
+    st.write("pie chart with values cats: 4, dogs: 6, birds: 2")
 
-        Return ONLY valid JSON.
 
-        Rules:
-        - No markdown
-        - No explanations
-        - Output must start with {{ and end with }}
-        - Values must be explicit numbers
+user_input = st.text_area(
+    "Prompt",
+    height=120,
+    placeholder="Exemplo: line chart with values jan: 5, feb: 8, mar: 13",
+)
 
-        Format:
-        {{
-        "type": "bar" | "line" | "pie",
-        "labels": string[],
-        "values": number[],
-        "title": string
-        }}
+generate = st.button("Gerar grafico", type="primary")
 
-        Examples:
-
-        Input: bar chart with values 10, 20, 30
-        Output:
-        {{"type":"bar","labels":["A","B","C"],"values":[10,20,30],"title":"Bar chart"}}
-
-        Input: line chart with values jan, feb: 5, 8
-        Output:
-        {{"type":"line","labels":["jan","feb"],"values":[5,8],"title":"Sales"}}
-
-        Now generate the JSON for:
-
-        {user_input}
-    """
-    
-def validate(data):
-    required = ["type", "labels", "values", "title"]
-
-    if data["type"] not in ["bar", "line", "pie"]:
-        return False, "Invalid type"
-
-    if not all(isinstance(v, (int, float)) for v in data["values"]):
-        return False, "Values should be numbers"
-
-    for key in required:
-        if key not in data:
-            return False, f"Missing {key}"
-
-    if data["type"] not in ["bar", "line", "pie"]:
-        return False, "Invalid type"
-
-    if len(data["labels"]) != len(data["values"]):
-        return False, "Labels and values mismatch"
-
-    return True, None
-
-def render_chart(data):
-    if data["type"] == "bar":
-        fig = px.bar(x=data["labels"], y=data["values"], title=data.get("title"))
-
-    elif data["type"] == "line":
-        fig = px.line(x=data["labels"], y=data["values"], title=data.get("title"))
-
-    elif data["type"] == "pie":
-        fig = px.pie(names=data["labels"], values=data["values"], title=data.get("title"))
-
+if generate:
+    if not user_input.strip():
+        st.error("Digite um prompt para gerar o grafico.")
     else:
-        return None
+        result = pipeline.generate_chart(user_input)
 
-    return fig
+        st.info(f"Fonte da resposta: {result.source}")
+        st.plotly_chart(render_chart(result.chart), use_container_width=True)
 
-if user_input:
-    response = assistant.generate_code(context, build_prompt(user_input))
-    print("Raw response:", response)
-    
-    json_str = extract_json(response)
-    print("Extracted JSON string:", json_str)
-    
-    data = None
-    if not json_str:
-        st.error("Não foi possível extrair JSON")
-    else:
-        data = parse_json(json_str)
+        col_json, col_raw = st.columns(2)
 
-    if not data:
-        st.error("Erro ao interpretar JSON")
-    else:
-        st.json(data)
-        valid, error = validate(data)
+        with col_json:
+            st.subheader("JSON final")
+            st.json(result.chart.to_dict())
 
-        if not valid:
-            st.error(error)
-        else:
-            fig = render_chart(data)
-            st.plotly_chart(fig)
+        with col_raw:
+            st.subheader("Resposta bruta")
+            st.code(result.raw_response or "Sem resposta bruta do modelo.", language="json")
+
+        if result.warnings:
+            st.warning("\n".join(result.warnings))
