@@ -21,7 +21,7 @@ usar IA para traduzir linguagem natural em uma especificacao de visualizacao.
 - Upload de dataset CSV na interface principal
 - Gera apenas `line`, `bar` e `pie`
 - Usa apenas colunas reais do dataset
-- Nao inventa valores
+- Não inventa valores
 - Valida colunas, agregacoes e combinacoes invalidas
 - Faz fallback heuristico se o modelo nao estiver disponivel
 
