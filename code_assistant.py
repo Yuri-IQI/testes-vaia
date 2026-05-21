@@ -6,7 +6,7 @@ from typing import Optional
 try:
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
-except Exception:  # pragma: no cover - depends on optional runtime packages
+except Exception:
     AutoModelForCausalLM = None
     AutoTokenizer = None
     torch = None
@@ -100,6 +100,6 @@ class CodeAssistant:
             top_p=top_p,
             pad_token_id=self._tokenizer.eos_token_id,
         )
-
+    
         generated_tokens = outputs[0][inputs["input_ids"].shape[-1] :]
         return self._tokenizer.decode(generated_tokens, skip_special_tokens=True).strip()

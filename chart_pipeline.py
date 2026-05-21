@@ -1,10 +1,7 @@
 from __future__ import annotations
-
 import json
 from dataclasses import dataclass, field
-
 import pandas as pd
-
 from chart_utils import (
     VisualizationSpec,
     aggregate_for_visualization,
@@ -16,7 +13,7 @@ from chart_utils import (
 from code_assistant import CodeAssistant
 from examples import build_examples_block
 from json_parser import extract_json, parse_json
-
+from peft import PeftModel
 
 VISUALIZATION_SYSTEM_PROMPT = """
 You are a financial dataset visualization assistant.
@@ -62,6 +59,11 @@ class VisualizationGenerationResult:
     def frontend_records(self) -> list[dict[str, object]]:
         return build_frontend_records(self.plot_frame)
 
+class DesenrolaAssistant(CodeAssistant):
+    def _ensure_loaded(self) -> None:
+        super()._ensure_loaded()
+        self._model = PeftModel.from_pretrained(self._model, "./desenrola_model_1.5B")
+        self._model = self._model.merge_and_unload()
 
 class ChartPipeline:
     def __init__(self, assistant: CodeAssistant | None = None) -> None:
@@ -138,7 +140,7 @@ class ChartPipeline:
             json.dumps(summary, indent=2, ensure_ascii=False),
             "",
             "Examples:",
-            build_examples_block(),
+                build_examples_block(),
             "",
             f'User request: "{user_prompt}"',
             "Return a visualization specification JSON using only dataset columns from the summary.",

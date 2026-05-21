@@ -46,7 +46,7 @@ pipeline = load_pipeline()
 
 st.title("VAIA - Visualizacao assistida por IA para datasets")
 st.caption(
-    "Faça upload de um CSV financeiro, escreva seu pedido em linguagem natural e "
+    "Faça upload de um CSV, escreva seu pedido em linguagem natural e "
     "receba uma especificação de gráfico baseada apenas nas colunas reais do dataset."
 )
 

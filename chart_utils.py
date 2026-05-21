@@ -23,7 +23,6 @@ MEAN_HINTS = ("average", "mean", "avg", "media", "média")
 COUNT_HINTS = ("count", "number of", "how many", "frequency", "quantidade de")
 COLOR_HINTS = ("split by", "grouped by", "group by", "grouping by", "colored by", "breakdown by", "segmented by", "composition of")
 
-
 @dataclass
 class VisualizationDataSpec:
     dimension: str
@@ -163,6 +162,7 @@ def _coerce_datetime_columns(frame: pd.DataFrame) -> pd.DataFrame:
 
     return converted
 
+# CSV
 
 def load_csv_dataset(source: str | Path | bytes | BinaryIO) -> pd.DataFrame:
     last_error: Exception | None = None
@@ -179,7 +179,6 @@ def load_csv_dataset(source: str | Path | bytes | BinaryIO) -> pd.DataFrame:
             last_error = exc
 
     raise ValueError("Could not read the CSV dataset. Check the file format and encoding.") from last_error
-
 
 def _classify_column(series: pd.Series) -> str:
     if is_datetime64_any_dtype(series):
@@ -243,31 +242,7 @@ def summarize_dataframe(frame: pd.DataFrame, max_rows: int = 5, max_values: int 
         "sample_rows": _dataframe_to_records(frame.head(max_rows)),
     }
 
-
-def _resolve_column_name(requested: str, columns: list[str]) -> str | None:
-    if requested in columns:
-        return requested
-
-    compact_requested = _compact_text(requested)
-    normalized_requested = _normalize_text(requested)
-
-    if not compact_requested and not normalized_requested:
-        return None
-
-    compact_matches = [column for column in columns if _compact_text(column) == compact_requested]
-    if len(compact_matches) == 1:
-        return compact_matches[0]
-
-    normalized_matches = [column for column in columns if _normalize_text(column) == normalized_requested]
-    if len(normalized_matches) == 1:
-        return normalized_matches[0]
-
-    contains_matches = [column for column in columns if compact_requested and compact_requested in _compact_text(column)]
-    if len(contains_matches) == 1:
-        return contains_matches[0]
-
-    return None
-
+# Tratamento de Respostas
 
 def _default_title(chart_type: str, aggregation: str, metric: str, dimension: str) -> str:
     return f"{aggregation.title()} of {metric} by {dimension} ({chart_type.title()})"
@@ -300,6 +275,30 @@ def normalize_visualization_payload(payload: dict[str, Any]) -> dict[str, Any]:
         "explanation": explanation,
     }
 
+
+def _resolve_column_name(requested: str, columns: list[str]) -> str | None:
+    if requested in columns:
+        return requested
+
+    compact_requested = _compact_text(requested)
+    normalized_requested = _normalize_text(requested)
+
+    if not compact_requested and not normalized_requested:
+        return None
+
+    compact_matches = [column for column in columns if _compact_text(column) == compact_requested]
+    if len(compact_matches) == 1:
+        return compact_matches[0]
+
+    normalized_matches = [column for column in columns if _normalize_text(column) == normalized_requested]
+    if len(normalized_matches) == 1:
+        return normalized_matches[0]
+
+    contains_matches = [column for column in columns if compact_requested and compact_requested in _compact_text(column)]
+    if len(contains_matches) == 1:
+        return contains_matches[0]
+
+    return None
 
 def resolve_and_validate_visualization_payload(
     payload: dict[str, Any],
@@ -360,6 +359,7 @@ def resolve_and_validate_visualization_payload(
 
     return normalized, None
 
+# Tratamento de dados para resposta
 
 def aggregate_for_visualization(frame: pd.DataFrame, spec: VisualizationSpec) -> pd.DataFrame:
     dimension = spec.data.dimension
@@ -471,6 +471,7 @@ def build_matplotlib_figure(plot_frame: pd.DataFrame, spec: VisualizationSpec):
 def build_frontend_records(plot_frame: pd.DataFrame) -> list[dict[str, Any]]:
     return _dataframe_to_records(plot_frame)
 
+# Resolução de respostas e validação
 
 def _infer_chart_type(prompt: str) -> str:
     if _contains_phrase(prompt, PIE_HINTS):
