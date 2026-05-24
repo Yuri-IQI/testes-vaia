@@ -17,10 +17,10 @@ from chart_utils import build_matplotlib_figure, load_csv_dataset
 from code_assistant import CodeAssistant
 
 PROJECT_DIR = Path(__file__).resolve().parent
-DEFAULT_DATASET = PROJECT_DIR / "sample_data" / "sample_sales_data.csv"
+DEFAULT_DATASET = PROJECT_DIR / "sample_data" / os.getenv("DEFAULT_DATASET", "finance_economics_dataset.csv")"
 DEFAULT_PROMPT = "Compare total sales by country in a bar chart and split by product line."
-DEFAULT_ADAPTER = PROJECT_DIR / "desenrola_model_1.5B"
-DEFAULT_MODEL_NAME = os.getenv("VAIA_MODEL_NAME", "Qwen/Qwen2.5-1.5B-Instruct")
+DEFAULT_ADAPTER = PROJECT_DIR / os.getenv("DEFAULT_ADAPTER", "financial_adapter")
+DEFAULT_MODEL_NAME = os.getenv("BASE_MODEL", "Qwen/Qwen2.5-0.5B-Instruct")
 
 
 class FineTunedAssistant(CodeAssistant):
@@ -38,7 +38,7 @@ class FineTunedAssistant(CodeAssistant):
             print("No adapter found, using base model.")
 
 
-def load_desenrola(path: str) -> pd.DataFrame:
+def load_dataset(path: str) -> pd.DataFrame:
     df = pd.read_csv(path, sep=";", decimal=",")
     df["DATA_BASE"] = pd.to_datetime(df["DATA_BASE"].astype(str), format="%Y%m")
     df["COD_CONGLOMERADO_FINANCEIRO"] = df["COD_CONGLOMERADO_FINANCEIRO"].astype(str)
@@ -57,7 +57,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    frame = load_desenrola(args.dataset) if args.desenrola else load_csv_dataset(args.dataset)
+    frame = load_dataset(args.dataset) if args.desenrola else load_csv_dataset(args.dataset)
 
     assistant = FineTunedAssistant(adapter_path=args.adapter, model_name=args.model_name)
     pipeline = ChartPipeline(assistant=assistant)

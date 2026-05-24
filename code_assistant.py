@@ -12,7 +12,7 @@ except Exception:
     torch = None
 
 
-DEFAULT_MODEL_NAME = os.getenv("VAIA_MODEL_NAME", "Qwen/Qwen2.5-Coder-1.5B-Instruct")
+DEFAULT_MODEL_NAME = os.getenv("BASE_MODEL", "Qwen/Qwen2.5-Coder-1.5B-Instruct")
 
 
 class CodeAssistant:

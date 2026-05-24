@@ -13,7 +13,6 @@ from chart_utils import (
 from code_assistant import CodeAssistant
 from examples import build_examples_block
 from json_parser import extract_json, parse_json
-from peft import PeftModel
 
 VISUALIZATION_SYSTEM_PROMPT = """
 You are a financial dataset visualization assistant.
@@ -46,7 +45,6 @@ Required JSON schema:
 }
 """.strip()
 
-
 @dataclass
 class VisualizationGenerationResult:
     spec: VisualizationSpec
@@ -58,12 +56,6 @@ class VisualizationGenerationResult:
 
     def frontend_records(self) -> list[dict[str, object]]:
         return build_frontend_records(self.plot_frame)
-
-class DesenrolaAssistant(CodeAssistant):
-    def _ensure_loaded(self) -> None:
-        super()._ensure_loaded()
-        self._model = PeftModel.from_pretrained(self._model, "./desenrola_model_1.5B")
-        self._model = self._model.merge_and_unload()
 
 class ChartPipeline:
     def __init__(self, assistant: CodeAssistant | None = None) -> None:

@@ -13,11 +13,13 @@ from transformers import (
 )
 from trl import SFTTrainer, SFTConfig
 
+BASE_MODEL = os.getenv("TRAIN_MODEL", "Qwen/Qwen2.5-0.5B-Instruct")
+DEFAULT_ADAPTER = os.getenv("DEFAULT_ADAPTER", "financial_adapter")
 
 @dataclass
 class FinancialFineTuneConfig:
-    base_model_name: str = "Qwen/Qwen2.5-Coder-1.5B-Instruct"
-    output_dir: str = "./financial_model"
+    base_model_name: str = BASE_MODEL
+    output_dir: str = "./" + DEFAULT_ADAPTER
 
     use_4bit: bool = True
     bnb_4bit_compute_dtype: str = "float16"
