@@ -1,12 +1,15 @@
 ---
 base_model: Qwen/Qwen2.5-Coder-0.5B-Instruct
-library_name: transformers
+library_name: peft
 model_name: financial_adapter
 tags:
-- generated_from_trainer
-- trl
+- base_model:adapter:Qwen/Qwen2.5-Coder-0.5B-Instruct
+- lora
 - sft
+- transformers
+- trl
 licence: license
+pipeline_tag: text-generation
 ---
 
 # Model Card for financial_adapter
@@ -35,6 +38,7 @@ This model was trained with SFT.
 
 ### Framework versions
 
+- PEFT 0.19.1
 - TRL: 1.4.0
 - Transformers: 5.3.0
 - Pytorch: 2.6.0+cu124

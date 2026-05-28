@@ -3,10 +3,10 @@ import sys
 import json
 import pandas as pd
 
+from generator.dataset import summarize_dataframe
+
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT_DIR)
-
-from chart_utils import summarize_dataframe
 
 dataset_name = input("Caminho para o dataset:\n").strip()
 
@@ -43,7 +43,6 @@ for col in df.columns:
 
             converted = pd.to_numeric(cleaned, errors="coerce")
 
-            # Só substitui se boa parte virou número
             if converted.notna().mean() > 0.7:
                 df[col] = converted
 
@@ -66,7 +65,6 @@ output_path = os.path.join(
 
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-# Salva resumo
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(
         "dataset_summary = "

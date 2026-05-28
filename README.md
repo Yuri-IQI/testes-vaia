@@ -15,5 +15,5 @@ python -m train.py
 
 Teste com matplot:
 ```
-python -m matplot.py
+python -m matplot.py --prompt "make a chart" --adapter financial_adapter
 ```

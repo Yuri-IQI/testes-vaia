@@ -1,47 +1,43 @@
 from __future__ import annotations
-import json
 from dataclasses import dataclass, field
 import pandas as pd
-from chart_utils import (
-    VisualizationSpec,
-    aggregate_for_visualization,
-    build_frontend_records,
-    infer_visualization_spec,
-    resolve_and_validate_visualization_payload,
-    summarize_dataframe,
-)
 from code_assistant import CodeAssistant
-from examples import build_examples_block
+from generator.aggregator import aggregate_for_visualization, build_frontend_records
+from generator.dataset import summarize_dataframe
+from generator.fallback_inferrer import infer_visualization_spec
+from generator.models import VisualizationSpec
+from generator.prompt_builder import build_prompt
+from generator.spec_resolver import resolve_and_validate_visualization_payload
 from json_parser import extract_json, parse_json
 
 VISUALIZATION_SYSTEM_PROMPT = """
 You are a financial dataset visualization assistant.
 
-Return ONLY valid JSON.
-Do not use markdown.
-Do not use code fences.
-Do not explain outside JSON.
-Do not invent columns.
-Do not invent values.
-Use ONLY columns that exist in the provided dataset summary.
-Supported chart types: line, bar, pie.
-Supported aggregations: sum, mean, count.
-Use the color field only for grouped line or bar charts.
-Never use color with pie charts.
-Prefer date or time columns for line charts when the request is about trends over time.
+Return ONLY valid JSON. No markdown, no code fences, no explanation outside JSON.
+Do not invent columns or values. Use ONLY columns from the dataset summary.
 
-Required JSON schema:
+Chart types: line, bar, pie, scatter, histogram, box.
+Aggregations: sum, mean, count. Null for scatter, histogram, box.
+dimension is null only for histogram.
+
 {
-  "type": "line" | "bar" | "pie",
+  "type": "line|bar|pie|scatter|histogram|box",
   "data": {
-    "dimension": "existing dataset column",
-    "metric": "existing dataset column",
-    "aggregation": "sum" | "mean" | "count",
-    "color": "optional existing dataset column"
+    "dimension": "column or null",
+    "metric": "column",
+    "metric_secondary": "column or null",
+    "aggregation": "sum|mean|count|null",
+    "color": "column or null"
   },
-  "title": "chart title",
-  "description": "short description of what the chart shows",
-  "explanation": "short explanation for why the chart fits the request"
+  "render_options": {
+    "log_scale_y": false,
+    "show_trend_line": false,
+    "nbins": null,
+    "top_n": null
+  },
+  "title": "...",
+  "description": "...",
+  "explanation": "..."
 }
 """.strip()
 
@@ -71,15 +67,17 @@ class ChartPipeline:
         warnings: list[str] = []
         raw_response = ""
 
-        for attempt in range(1, retries + 2):
+        for attempt in range(1, retries):
             feedback = warnings[-1] if warnings else ""
-            prompt = self._build_prompt(summary, user_prompt, feedback)
+                        
+            # TODO: Substituir
+            prompt = build_prompt(summary, user_prompt, feedback)
 
             try:
                 raw_response = self.assistant.generate_text(
                     VISUALIZATION_SYSTEM_PROMPT,
                     prompt,
-                    max_new_tokens=500,
+                    max_new_tokens=600,
                     temperature=0.1,
                 )
             except RuntimeError as exc:
@@ -102,6 +100,11 @@ class ChartPipeline:
                 continue
 
             spec = VisualizationSpec.from_dict(normalized)
+            
+            if spec.chart_type == "histogram" and spec.render_options.nbins is None:
+                unique = frame[spec.data.metric].nunique()
+                spec.render_options.nbins = 20 if unique <= 30 else 40 if unique <= 200 else 60
+            
             plot_frame = aggregate_for_visualization(frame, spec)
 
             return VisualizationGenerationResult(
@@ -125,26 +128,3 @@ class ChartPipeline:
             raw_response=raw_response,
             warnings=warnings,
         )
-
-    def _build_prompt(self, summary: dict[str, object], user_prompt: str, feedback: str) -> str:
-        blocks = [
-            "Dataset summary:",
-            json.dumps(summary, indent=2, ensure_ascii=False),
-            "",
-            "Examples:",
-                build_examples_block(),
-            "",
-            f'User request: "{user_prompt}"',
-            "Return a visualization specification JSON using only dataset columns from the summary.",
-        ]
-
-        if feedback:
-            blocks.extend(
-                [
-                    "",
-                    "Fix the previous problem before answering again.",
-                    f"Previous validation error: {feedback}",
-                ]
-            )
-
-        return "\n".join(blocks).strip()

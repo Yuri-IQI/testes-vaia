@@ -6,67 +6,237 @@ import os
 from pathlib import Path
 
 import matplotlib
-matplotlib.use("TkAgg")
-import matplotlib.pyplot as plt
 
+from generator.chart_pipeline import ChartPipeline
+from generator.renderer import build_matplotlib_figure
+
+try:
+    matplotlib.use("TkAgg")
+except Exception:
+    matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
 import pandas as pd
+
 from peft import PeftModel
 
-from chart_pipeline import ChartPipeline
-from chart_utils import build_matplotlib_figure, load_csv_dataset
 from code_assistant import CodeAssistant
 
+
 PROJECT_DIR = Path(__file__).resolve().parent
-DEFAULT_DATASET = PROJECT_DIR / "sample_data" / os.getenv("DEFAULT_DATASET", "finance_economics_dataset.csv")
-DEFAULT_PROMPT = "Compare total sales by country in a bar chart and split by product line."
-DEFAULT_ADAPTER = PROJECT_DIR / os.getenv("DEFAULT_ADAPTER", "financial_adapter")
-DEFAULT_MODEL_NAME = os.getenv("BASE_MODEL", "Qwen/Qwen2.5-0.5B-Instruct")
+
+DEFAULT_DATASET = (
+    PROJECT_DIR
+    / "sample_data"
+    / os.getenv("DEFAULT_DATASET_NAME", "finance_economics_dataset.csv")
+)
+
+DEFAULT_PROMPT = (
+    "Show trends in the dataset using the best possible visualization."
+)
+
+DEFAULT_ADAPTER = os.getenv("DEFAULT_ADAPTER", "financial_adapter")
+
+DEFAULT_MODEL_NAME = os.getenv(
+    "BASE_MODEL",
+    "Qwen/Qwen2.5-0.5B-Instruct"
+)
 
 
 class FineTunedAssistant(CodeAssistant):
-    def __init__(self, adapter_path: str, model_name: str = DEFAULT_MODEL_NAME) -> None:
+    def __init__(
+        self,
+        adapter_path: str | None = None,
+        model_name: str = DEFAULT_MODEL_NAME
+    ) -> None:
         super().__init__(model_name=model_name)
         self.adapter_path = adapter_path
 
     def _ensure_loaded(self) -> None:
         super()._ensure_loaded()
-        if self.adapter_path and Path(self.adapter_path).exists():
-            self._model = PeftModel.from_pretrained(self._model, self.adapter_path)
+
+        if (
+            self.adapter_path
+            and Path(self.adapter_path).exists()
+        ):
+            print(f"Loading adapter: {self.adapter_path}")
+
+            self._model = PeftModel.from_pretrained(
+                self._model,
+                self.adapter_path
+            )
+
             self._model = self._model.merge_and_unload()
-            print(f"Adapter loaded from: {self.adapter_path}")
+
+            print("Adapter merged successfully.")
+
         else:
-            print("No adapter found, using base model.")
+            print("No adapter found. Using base model.")
 
 
-def load_dataset(path: str) -> pd.DataFrame:
-    df = pd.read_csv(path, sep=";", decimal=",")
-    df["DATA_BASE"] = pd.to_datetime(df["DATA_BASE"].astype(str), format="%Y%m")
-    df["COD_CONGLOMERADO_FINANCEIRO"] = df["COD_CONGLOMERADO_FINANCEIRO"].astype(str)
+def auto_load_dataset(path: str) -> pd.DataFrame:
+    """
+    Generic CSV loader that:
+    - detects separator automatically
+    - parses dates automatically
+    - converts numeric columns automatically
+    """
+
+    try:
+        df = pd.read_csv(
+            path,
+            sep=None,
+            engine="python"
+        )
+    except Exception:
+        df = pd.read_csv(path)
+
+    df.columns = [str(col).strip() for col in df.columns]
+
+    for col in df.columns:
+        col_lower = col.lower()
+
+        if any(
+            keyword in col_lower
+            for keyword in [
+                "date",
+                "data",
+                "time",
+                "timestamp",
+                "period"
+            ]
+        ):
+            try:
+                df[col] = pd.to_datetime(
+                    df[col],
+                    errors="ignore"
+                )
+            except Exception:
+                pass
+
+    for col in df.columns:
+
+        if df[col].dtype == object:
+
+            try:
+                cleaned = (
+                    df[col]
+                    .astype(str)
+                    .str.replace(".", "", regex=False)
+                    .str.replace(",", ".", regex=False)
+                )
+
+                numeric = pd.to_numeric(
+                    cleaned,
+                    errors="coerce"
+                )
+
+                if numeric.notna().mean() > 0.7:
+                    df[col] = numeric
+
+            except Exception:
+                pass
+
     return df
 
 
 def main() -> None:
+
     parser = argparse.ArgumentParser(
-        description="Generate a chart from a CSV dataset using a fine-tuned model."
+        description=(
+            "Generate charts from CSV datasets "
+            "using a fine-tuned LLM."
+        )
     )
-    parser.add_argument("--dataset", default=str(DEFAULT_DATASET))
-    parser.add_argument("--prompt", default=DEFAULT_PROMPT)
-    parser.add_argument("--adapter", default=str(DEFAULT_ADAPTER))
-    parser.add_argument("--desenrola", action="store_true")
-    parser.add_argument("--model", default=DEFAULT_MODEL_NAME, dest="model_name")
+
+    parser.add_argument(
+        "--dataset",
+        default=str(DEFAULT_DATASET),
+        help="Path to CSV dataset"
+    )
+
+    parser.add_argument(
+        "--prompt",
+        default=DEFAULT_PROMPT,
+        help="Visualization request prompt"
+    )
+
+    parser.add_argument(
+        "--adapter",
+        default=DEFAULT_ADAPTER,
+        help="LoRA adapter path"
+    )
+
+    parser.add_argument(
+        "--model",
+        default=DEFAULT_MODEL_NAME,
+        dest="model_name",
+        help="Base model name"
+    )
+
+    parser.add_argument(
+        "--save",
+        default=None,
+        help="Save figure to file"
+    )
 
     args = parser.parse_args()
 
-    frame = load_dataset(args.dataset) if args.desenrola else load_csv_dataset(args.dataset)
+    dataset_path = Path(args.dataset)
 
-    assistant = FineTunedAssistant(adapter_path=args.adapter, model_name=args.model_name)
-    pipeline = ChartPipeline(assistant=assistant)
+    if not dataset_path.exists():
+        raise FileNotFoundError(
+            f"Dataset not found: {dataset_path}"
+        )
 
-    result = pipeline.generate_visualization(frame, args.prompt)
-    figure = build_matplotlib_figure(result.plot_frame, result.spec)
+    print(f"Loading dataset: {dataset_path}")
 
-    print(f"Specification source: {result.source}")
-    print(json.dumps(result.spec.to_dict(), indent=2, ensure_ascii=False))
+    frame = auto_load_dataset(str(dataset_path))
+
+    print(f"Rows: {len(frame)}")
+    print(f"Columns: {len(frame.columns)}")
+
+    assistant = FineTunedAssistant(
+        adapter_path=args.adapter,
+        model_name=args.model_name
+    )
+
+    pipeline = ChartPipeline(
+        assistant=assistant
+    )
+
+    print("\nGenerating visualization...\n")
+
+    result = pipeline.generate_visualization(
+        frame,
+        args.prompt
+    )
+
+    print(result)
+    print(result.spec)
+    print(result.plot_frame.columns.tolist())
+    print(result.plot_frame.head())
+    print(result.spec.data.dimension, result.spec.data.metric)
+
+    figure = build_matplotlib_figure(
+        result.plot_frame,
+        result.spec
+    )
+
+    print(f"\nSpecification source: {result.source}\n")
+
+    print(
+        json.dumps(
+            result.spec.to_dict(),
+            indent=2,
+            ensure_ascii=False,
+            default=str
+        )
+    )
+
+    if args.save:
+        plt.savefig(args.save, bbox_inches="tight")
+        print(f"\nFigure saved to: {args.save}")
 
     plt.show()
 

@@ -31,522 +31,476 @@ def build_examples_block() -> str:
         lines.append("")
     return "\n".join(lines).strip()
 
+def build_few_shots_block() -> str:
+    lines = []
+    for i in range(0, 9):
+        lines.append(f"User request: {EXAMPLES[i]['request']}")
+        lines.append("JSON response:")
+        lines.append(json.dumps(EXAMPLES[i]["response"], indent=2, ensure_ascii=False))
+        lines.append("")
+    return "\n".join(lines).strip()
+
 EXAMPLES = [
     {
-        "request": "Show the evolution of trading volume over time.",
-        "response": {
-            "type": "line",
-            "data": {"dimension": "Date", "metric": "Trading Volume", "aggregation": "sum"},
-            "title": "Trading volume over time",
-            "description": "Displays how the total stock trading volume changed over time.",
-            "explanation": "Line charts are ideal for identifying trends across dates.",
-        },
-    },
-    {
-        "request": "How did the average closing price change over time?",
-        "response": {
-            "type": "line",
-            "data": {"dimension": "Date", "metric": "Close Price", "aggregation": "mean"},
-            "title": "Average closing price over time",
-            "description": "Shows the average stock closing price evolution across the dataset timeline.",
-            "explanation": "A line chart highlights temporal movement in market prices.",
-        },
-    },
-    {
-        "request": "Compare the average opening price over time by stock index.",
-        "response": {
-            "type": "line",
-            "data": {
-                "dimension": "Date",
-                "metric": "Open Price",
-                "aggregation": "mean",
-                "color": "Stock Index"
-            },
-            "title": "Average opening price by stock index",
-            "description": "Compares opening price trends between stock indexes over time.",
-            "explanation": "Using color by Stock Index separates the trends for each market index.",
-        },
-    },
-    {
-        "request": "Show the trend of GDP growth over time.",
-        "response": {
-            "type": "line",
-            "data": {"dimension": "Date", "metric": "GDP Growth (%)", "aggregation": "mean"},
-            "title": "GDP growth trend over time",
-            "description": "Displays how GDP growth rates evolved across the timeline.",
-            "explanation": "A temporal line chart is appropriate for macroeconomic indicators.",
-        },
-    },
-    {
-        "request": "Compare inflation rates over time by stock index.",
-        "response": {
-            "type": "line",
-            "data": {
-                "dimension": "Date",
-                "metric": "Inflation Rate (%)",
-                "aggregation": "mean",
-                "color": "Stock Index"
-            },
-            "title": "Inflation rate by stock index",
-            "description": "Shows inflation trends separated by stock index categories.",
-            "explanation": "Colored lines help compare inflation behavior across groups.",
-        },
-    },
-
-    {
-        "request": "Which stock index has the highest average trading volume?",
-        "response": {
-            "type": "bar",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Trading Volume",
-                "aggregation": "mean"
-            },
-            "title": "Average trading volume by stock index",
-            "description": "Compares average trading activity across stock indexes.",
-            "explanation": "Bar charts are effective for categorical comparisons.",
-        },
-    },
-    {
-        "request": "Compare the average close price by stock index.",
-        "response": {
-            "type": "bar",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Close Price",
-                "aggregation": "mean"
-            },
-            "title": "Average close price by stock index",
-            "description": "Shows the average closing price for each stock index.",
-            "explanation": "Bars clearly compare average values between categories.",
-        },
-    },
-    {
-        "request": "Show government debt by stock index.",
-        "response": {
-            "type": "bar",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Government Debt (Billion USD)",
-                "aggregation": "mean"
-            },
-            "title": "Government debt by stock index",
-            "description": "Compares average government debt levels associated with each stock index.",
-            "explanation": "Bar charts allow easy comparison of macroeconomic metrics across groups.",
-        },
-    },
-    {
-        "request": "Compare corporate profits by stock index.",
-        "response": {
-            "type": "bar",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Corporate Profits (Billion USD)",
-                "aggregation": "mean"
-            },
-            "title": "Corporate profits by stock index",
-            "description": "Displays average corporate profits grouped by stock index.",
-            "explanation": "Bars emphasize differences between financial market categories.",
-        },
-    },
-    {
-        "request": "Compare consumer spending by stock index.",
-        "response": {
-            "type": "bar",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Consumer Spending (Billion USD)",
-                "aggregation": "mean"
-            },
-            "title": "Consumer spending by stock index",
-            "description": "Shows average consumer spending values across stock indexes.",
-            "explanation": "Categorical comparisons are best represented using bars.",
-        },
-    },
-
-    {
-        "request": "What is the market share of each stock index in total trading volume?",
-        "response": {
-            "type": "pie",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Trading Volume",
-                "aggregation": "sum"
-            },
-            "title": "Trading volume share by stock index",
-            "description": "Displays the proportion of total trading volume for each stock index.",
-            "explanation": "Pie charts are useful for visualizing proportional contributions.",
-        },
-    },
-    {
-        "request": "Show the distribution of mergers and acquisitions deals by stock index.",
-        "response": {
-            "type": "pie",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Mergers & Acquisitions Deals",
-                "aggregation": "sum"
-            },
-            "title": "M&A deals distribution by stock index",
-            "description": "Shows how merger and acquisition deals are distributed across stock indexes.",
-            "explanation": "Pie charts highlight the composition of total deals.",
-        },
-    },
-    {
-        "request": "How is venture capital funding distributed among stock indexes?",
-        "response": {
-            "type": "pie",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Venture Capital Funding (Billion USD)",
-                "aggregation": "sum"
-            },
-            "title": "Venture capital funding distribution",
-            "description": "Displays the share of venture capital funding across stock indexes.",
-            "explanation": "Pie charts reveal proportional allocation among categories.",
-        },
-    },
-    {
-        "request": "Show the proportion of consumer spending by stock index.",
-        "response": {
-            "type": "pie",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Consumer Spending (Billion USD)",
-                "aggregation": "sum"
-            },
-            "title": "Consumer spending share by stock index",
-            "description": "Displays how consumer spending is distributed among stock indexes.",
-            "explanation": "Pie charts effectively represent percentage contributions.",
-        },
-    },
-
-    {
-        "request": "Show the relationship between inflation rate and unemployment rate.",
-        "response": {
-            "type": "scatter",
-            "data": {
-                "x": "Inflation Rate (%)",
-                "y": "Unemployment Rate (%)",
-                "color": "Stock Index"
-            },
-            "title": "Inflation vs unemployment rate",
-            "description": "Explores the relationship between inflation and unemployment rates.",
-            "explanation": "Scatter plots are ideal for analyzing relationships between numeric variables.",
-        },
-    },
-    {
-        "request": "Compare crude oil price and gold price.",
-        "response": {
-            "type": "scatter",
-            "data": {
-                "x": "Crude Oil Price (USD per Barrel)",
-                "y": "Gold Price (USD per Ounce)",
-                "color": "Stock Index"
-            },
-            "title": "Crude oil price vs gold price",
-            "description": "Shows the relationship between oil and gold market prices.",
-            "explanation": "Scatter plots help identify correlations between commodities.",
-        },
-    },
-    {
-        "request": "Analyze the relationship between GDP growth and consumer confidence.",
-        "response": {
-            "type": "scatter",
-            "data": {
-                "x": "GDP Growth (%)",
-                "y": "Consumer Confidence Index",
-                "color": "Stock Index"
-            },
-            "title": "GDP growth vs consumer confidence",
-            "description": "Explores how GDP growth relates to consumer confidence levels.",
-            "explanation": "Scatter plots reveal patterns and trends between economic indicators.",
-        },
-    },
-
-    {
-        "request": "Show the distribution of daily closing prices.",
+        "request": "Show the distribution of crude oil prices.",
         "response": {
             "type": "histogram",
             "data": {
-                "metric": "Close Price"
+                "dimension": None,
+                "metric": "Crude Oil Price (USD per Barrel)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
             },
-            "title": "Distribution of closing prices",
-            "description": "Displays how closing prices are distributed across observations.",
-            "explanation": "Histograms are suitable for understanding numeric distributions.",
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": 40,
+                "top_n": None,
+            },
+            "title": "Distribution of crude oil prices",
+            "description": "Shows how crude oil prices are spread across the dataset.",
+            "explanation": "A histogram reveals the frequency distribution of a single numeric column.",
         },
     },
     {
-        "request": "Show the distribution of interest rates.",
-        "response": {
-            "type": "histogram",
-            "data": {
-                "metric": "Interest Rate (%)"
-            },
-            "title": "Distribution of interest rates",
-            "description": "Displays the frequency distribution of interest rate values.",
-            "explanation": "Histograms reveal concentration and spread of values.",
-        },
-    },
-    {
-        "request": "Compare closing price distributions by stock index.",
+        "request": "Show the spread of close prices by stock index.",
         "response": {
             "type": "box",
             "data": {
                 "dimension": "Stock Index",
-                "metric": "Close Price"
+                "metric": "Close Price",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
             },
-            "title": "Closing price distribution by stock index",
-            "description": "Compares the spread and outliers of closing prices across indexes.",
-            "explanation": "Box plots are ideal for comparing distributions between groups.",
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Close price spread by stock index",
+            "description": "Displays the distribution and outliers of closing prices for each stock index.",
+            "explanation": "Box plots show variance and outliers across categorical groups.",
         },
     },
     {
-        "request": "Show the evolution of gold prices over time.",
+        "request": "Is there a correlation between crude oil price and close price?",
         "response": {
-            "type": "line",
-            "data": {"dimension": "Date", "metric": "Gold Price (USD per Ounce)", "aggregation": "mean"},
-            "title": "Gold prices over time",
-            "description": "Displays how gold prices changed throughout the timeline.",
-            "explanation": "Line charts are appropriate for tracking commodity price trends over time.",
-        },
-    },
-    {
-        "request": "How did crude oil prices change over time?",
-        "response": {
-            "type": "line",
-            "data": {"dimension": "Date", "metric": "Crude Oil Price (USD per Barrel)", "aggregation": "mean"},
-            "title": "Crude oil prices over time",
-            "description": "Shows the evolution of oil prices across the dataset timeline.",
-            "explanation": "Temporal data is best visualized using line charts.",
-        },
-    },
-    {
-        "request": "Compare unemployment rates over time by stock index.",
-        "response": {
-            "type": "line",
+            "type": "scatter",
             "data": {
-                "dimension": "Date",
-                "metric": "Unemployment Rate (%)",
-                "aggregation": "mean",
-                "color": "Stock Index"
+                "dimension": "Crude Oil Price (USD per Barrel)",
+                "metric": "Close Price",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
             },
-            "title": "Unemployment rate by stock index",
-            "description": "Displays unemployment rate trends separated by stock index.",
-            "explanation": "Multiple lines allow comparison between stock index categories over time.",
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Crude oil price vs close price",
+            "description": "Plots each observation as a point to reveal any linear relationship between oil and stock prices.",
+            "explanation": "Scatter with a trend line is the standard tool for visualizing correlation between two numeric columns.",
         },
     },
     {
-        "request": "Show the trend of consumer confidence over time.",
+        "request": "Show trading volume over time by stock index.",
         "response": {
             "type": "line",
             "data": {
                 "dimension": "Date",
-                "metric": "Consumer Confidence Index",
-                "aggregation": "mean"
+                "metric": "Trading Volume",
+                "metric_secondary": None,
+                "aggregation": "sum",
+                "color": "Stock Index",
             },
-            "title": "Consumer confidence over time",
-            "description": "Tracks changes in consumer confidence levels throughout the timeline.",
-            "explanation": "Line charts clearly show fluctuations in economic indicators over time.",
+            "render_options": {
+                "log_scale_y": True,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Trading volume over time by stock index",
+            "description": "Compares total trading volume trends across stock indexes on a log scale.",
+            "explanation": "Trading Volume spans several orders of magnitude, so a log scale prevents large spikes from compressing the rest of the chart.",
         },
     },
     {
-        "request": "Compare venture capital funding over time by stock index.",
-        "response": {
-            "type": "line",
-            "data": {
-                "dimension": "Date",
-                "metric": "Venture Capital Funding (Billion USD)",
-                "aggregation": "mean",
-                "color": "Stock Index"
-            },
-            "title": "Venture capital funding by stock index",
-            "description": "Compares venture capital investment trends across stock indexes.",
-            "explanation": "Color grouping separates funding patterns between indexes.",
-        },
-    },
-
-    {
-        "request": "Which stock index has the highest average GDP growth?",
+        "request": "Which are the top 3 stock indexes by average corporate profits?",
         "response": {
             "type": "bar",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "GDP Growth (%)",
-                "aggregation": "mean"
-            },
-            "title": "Average GDP growth by stock index",
-            "description": "Compares average GDP growth rates across stock indexes.",
-            "explanation": "Bar charts make it easy to compare average macroeconomic performance.",
-        },
-    },
-    {
-        "request": "Compare inflation rates by stock index.",
-        "response": {
-            "type": "bar",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Inflation Rate (%)",
-                "aggregation": "mean"
-            },
-            "title": "Average inflation rate by stock index",
-            "description": "Displays average inflation levels grouped by stock index.",
-            "explanation": "Bars effectively compare economic indicators between categories.",
-        },
-    },
-    {
-        "request": "Compare average forex USD/EUR values by stock index.",
-        "response": {
-            "type": "bar",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Forex USD/EUR",
-                "aggregation": "mean"
-            },
-            "title": "Average USD/EUR exchange rate by stock index",
-            "description": "Shows average USD/EUR exchange rate values across indexes.",
-            "explanation": "Bar charts are suitable for comparing average exchange rates.",
-        },
-    },
-    {
-        "request": "Show average real estate index values by stock index.",
-        "response": {
-            "type": "bar",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Real Estate Index",
-                "aggregation": "mean"
-            },
-            "title": "Real estate index by stock index",
-            "description": "Compares real estate index averages across stock indexes.",
-            "explanation": "Categorical comparisons are clearly represented with bars.",
-        },
-    },
-    {
-        "request": "Compare bankruptcy rates by stock index.",
-        "response": {
-            "type": "bar",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Bankruptcy Rate (%)",
-                "aggregation": "mean"
-            },
-            "title": "Bankruptcy rate by stock index",
-            "description": "Shows average bankruptcy rates for each stock index.",
-            "explanation": "Bar charts highlight differences in bankruptcy levels across categories.",
-        },
-    },
-
-    {
-        "request": "Show the share of total corporate profits by stock index.",
-        "response": {
-            "type": "pie",
             "data": {
                 "dimension": "Stock Index",
                 "metric": "Corporate Profits (Billion USD)",
-                "aggregation": "sum"
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": None,
             },
-            "title": "Corporate profits share by stock index",
-            "description": "Displays the contribution of each stock index to total corporate profits.",
-            "explanation": "Pie charts effectively show proportional distributions.",
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": 3,
+            },
+            "title": "Top 3 stock indexes by average corporate profits",
+            "description": "Ranks the three stock indexes with the highest average corporate profits.",
+            "explanation": "top_n limits the bar chart to the requested number of leading categories.",
         },
     },
     {
-        "request": "What proportion of total retail sales belongs to each stock index?",
+        "request": "Show the variance of unemployment rate across stock indexes.",
+        "response": {
+            "type": "box",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Unemployment Rate (%)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Unemployment rate variance by stock index",
+            "description": "Shows the spread and outliers of unemployment rates grouped by stock index.",
+            "explanation": "Box plots expose variance and extremes that a mean-based bar chart would hide.",
+        },
+    },
+    {
+        "request": "Is there a relationship between gold price and real estate index, colored by stock index?",
+        "response": {
+            "type": "scatter",
+            "data": {
+                "dimension": "Gold Price (USD per Ounce)",
+                "metric": "Real Estate Index",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Gold price vs real estate index by stock index",
+            "description": "Plots gold price against real estate index with each stock index in a distinct color.",
+            "explanation": "Color separates the groups while the trend line surfaces the overall relationship direction.",
+        },
+    },
+    {
+        "request": "Show the distribution of interest rates with high granularity.",
+        "response": {
+            "type": "histogram",
+            "data": {
+                "dimension": None,
+                "metric": "Interest Rate (%)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": 60,
+                "top_n": None,
+            },
+            "title": "Distribution of interest rates",
+            "description": "Shows the frequency of interest rate values across the full dataset at fine resolution.",
+            "explanation": "A higher bin count reveals subtle clustering in the distribution when the dataset is large.",
+        },
+    },
+    {
+        "request": "Compare average inflation rate by stock index and show outliers.",
+        "response": {
+            "type": "box",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Inflation Rate (%)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Inflation rate distribution by stock index",
+            "description": "Displays median, spread, and outliers of inflation rates for each stock index.",
+            "explanation": "Box plots are preferred over bar when the user explicitly asks about outliers or variance.",
+        },
+    },
+    {
+        "request": "Show the relationship between GDP growth and consumer spending.",
+        "response": {
+            "type": "scatter",
+            "data": {
+                "dimension": "GDP Growth (%)",
+                "metric": "Consumer Spending (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "GDP growth vs consumer spending",
+            "description": "Plots GDP growth against consumer spending to surface any macroeconomic relationship.",
+            "explanation": "Scatter with trend line is appropriate when the user asks about the relationship between two numeric indicators.",
+        },
+    },
+    {
+        "request": "Show how the interest rate evolved over time for each stock index.",
+        "response": {
+            "type": "line",
+            "data": {
+                "dimension": "Date",
+                "metric": "Interest Rate (%)",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Interest rate evolution by stock index",
+            "description": "Tracks mean interest rate over time separated by stock index.",
+            "explanation": "A colored line chart separates each index's monetary policy trajectory across the timeline.",
+        },
+    },
+    {
+        "request": "What is the distribution of bankruptcy rates?",
+        "response": {
+            "type": "histogram",
+            "data": {
+                "dimension": None,
+                "metric": "Bankruptcy Rate (%)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": 40,
+                "top_n": None,
+            },
+            "title": "Distribution of bankruptcy rates",
+            "description": "Shows how bankruptcy rate values are distributed across all observations.",
+            "explanation": "A histogram is the correct choice for understanding the shape of a single numeric column's distribution.",
+        },
+    },
+    {
+        "request": "Is there a correlation between inflation rate and unemployment rate by stock index?",
+        "response": {
+            "type": "scatter",
+            "data": {
+                "dimension": "Inflation Rate (%)",
+                "metric": "Unemployment Rate (%)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Inflation rate vs unemployment rate by stock index",
+            "description": "Plots inflation against unemployment for each observation, colored by stock index.",
+            "explanation": "Scatter with trend line surfaces the Phillips curve relationship; color separates market groups.",
+        },
+    },
+    {
+        "request": "Show the top 5 dates by highest total trading volume.",
+        "response": {
+            "type": "bar",
+            "data": {
+                "dimension": "Date",
+                "metric": "Trading Volume",
+                "metric_secondary": None,
+                "aggregation": "sum",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": 5,
+            },
+            "title": "Top 5 dates by total trading volume",
+            "description": "Ranks the five dates with the highest combined trading activity.",
+            "explanation": "top_n limits the bar chart to the explicitly requested number of leading entries.",
+        },
+    },
+    {
+        "request": "How spread out are venture capital funding values across stock indexes?",
+        "response": {
+            "type": "box",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Venture Capital Funding (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Venture capital funding spread by stock index",
+            "description": "Displays the distribution and outliers of venture capital funding grouped by stock index.",
+            "explanation": "Box plots reveal spread and extreme values that aggregated bar charts would obscure.",
+        },
+    },
+    {
+        "request": "Show the share of total retail sales by stock index.",
         "response": {
             "type": "pie",
             "data": {
                 "dimension": "Stock Index",
                 "metric": "Retail Sales (Billion USD)",
-                "aggregation": "sum"
+                "metric_secondary": None,
+                "aggregation": "sum",
+                "color": None,
             },
-            "title": "Retail sales distribution by stock index",
-            "description": "Shows how retail sales are distributed among stock indexes.",
-            "explanation": "Pie charts reveal category contributions to the total.",
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Share of total retail sales by stock index",
+            "description": "Shows each stock index's proportional contribution to total retail sales.",
+            "explanation": "Pie charts communicate part-of-whole relationships for low-cardinality categorical dimensions.",
         },
     },
     {
-        "request": "Show the distribution of government debt across stock indexes.",
-        "response": {
-            "type": "pie",
-            "data": {
-                "dimension": "Stock Index",
-                "metric": "Government Debt (Billion USD)",
-                "aggregation": "sum"
-            },
-            "title": "Government debt distribution by stock index",
-            "description": "Displays the share of government debt associated with each stock index.",
-            "explanation": "Pie charts are useful for understanding proportional composition.",
-        },
-    },
-
-    {
-        "request": "Analyze the relationship between interest rates and inflation rates.",
+        "request": "Is there a relationship between consumer confidence and consumer spending?",
         "response": {
             "type": "scatter",
             "data": {
-                "x": "Interest Rate (%)",
-                "y": "Inflation Rate (%)",
-                "color": "Stock Index"
+                "dimension": "Consumer Confidence Index",
+                "metric": "Consumer Spending (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
             },
-            "title": "Interest rate vs inflation rate",
-            "description": "Explores the relationship between interest and inflation rates.",
-            "explanation": "Scatter plots help identify economic correlations between numeric variables.",
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Consumer confidence vs consumer spending",
+            "description": "Plots consumer confidence against spending levels across all observations.",
+            "explanation": "Scatter with trend line is appropriate when the request asks about the relationship between two numeric indicators.",
         },
     },
     {
-        "request": "Show the relationship between trading volume and closing price.",
-        "response": {
-            "type": "scatter",
-            "data": {
-                "x": "Trading Volume",
-                "y": "Close Price",
-                "color": "Stock Index"
-            },
-            "title": "Trading volume vs closing price",
-            "description": "Explores whether trading activity is associated with stock closing prices.",
-            "explanation": "Scatter plots are useful for detecting relationships and clusters.",
-        },
-    },
-    {
-        "request": "Analyze consumer spending versus retail sales.",
-        "response": {
-            "type": "scatter",
-            "data": {
-                "x": "Consumer Spending (Billion USD)",
-                "y": "Retail Sales (Billion USD)",
-                "color": "Stock Index"
-            },
-            "title": "Consumer spending vs retail sales",
-            "description": "Examines the relationship between spending and retail activity.",
-            "explanation": "Scatter plots reveal patterns between economic indicators.",
-        },
-    },
-    {
-        "request": "Compare government debt and GDP growth.",
-        "response": {
-            "type": "scatter",
-            "data": {
-                "x": "Government Debt (Billion USD)",
-                "y": "GDP Growth (%)",
-                "color": "Stock Index"
-            },
-            "title": "Government debt vs GDP growth",
-            "description": "Explores how government debt levels relate to GDP growth.",
-            "explanation": "Scatter plots help identify possible economic relationships.",
-        },
-    },
-
-    {
-        "request": "Show the distribution of trading volumes.",
+        "request": "Show the distribution of daily high prices with fine granularity.",
         "response": {
             "type": "histogram",
             "data": {
-                "metric": "Trading Volume"
+                "dimension": None,
+                "metric": "Daily High",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
             },
-            "title": "Distribution of trading volumes",
-            "description": "Displays the frequency distribution of trading volume values.",
-            "explanation": "Histograms are effective for understanding data spread and concentration.",
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": 60,
+                "top_n": None,
+            },
+            "title": "Distribution of daily high prices",
+            "description": "Shows the frequency of daily high price values at fine resolution.",
+            "explanation": "A higher bin count is appropriate when the user explicitly requests granularity on a large dataset.",
+        },
+    },
+    {
+        "request": "Compare average consumer spending by stock index.",
+        "response": {
+            "type": "bar",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Consumer Spending (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Average consumer spending by stock index",
+            "description": "Compares mean consumer spending levels across stock indexes.",
+            "explanation": "A bar chart with mean aggregation is the standard choice for comparing a numeric metric across a categorical dimension.",
+        },
+    },
+    {
+        "request": "Show the volatility of gold prices across stock indexes.",
+        "response": {
+            "type": "box",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Gold Price (USD per Ounce)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Gold price volatility by stock index",
+            "description": "Displays the spread, median, and outliers of gold prices for each stock index.",
+            "explanation": "Volatility implies variance and outliers, which box plots convey directly; color reinforces the categorical grouping.",
+        },
+    },
+    {
+        "request": "Show how crude oil prices evolved over time.",
+        "response": {
+            "type": "line",
+            "data": {
+                "dimension": "Date",
+                "metric": "Crude Oil Price (USD per Barrel)",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Crude oil price evolution over time",
+            "description": "Tracks the mean crude oil price across the full dataset timeline.",
+            "explanation": "A line chart is the natural choice for a single numeric indicator evolving over a datetime dimension.",
         },
     },
     {
@@ -554,25 +508,637 @@ EXAMPLES = [
         "response": {
             "type": "histogram",
             "data": {
-                "metric": "GDP Growth (%)"
+                "dimension": None,
+                "metric": "GDP Growth (%)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": 40,
+                "top_n": None,
             },
             "title": "Distribution of GDP growth rates",
-            "description": "Displays how GDP growth values are distributed in the dataset.",
-            "explanation": "Histograms help visualize variability and skewness in numeric data.",
+            "description": "Shows how GDP growth rate values are spread across all observations.",
+            "explanation": "A histogram is appropriate for understanding the shape and spread of a single numeric column.",
         },
     },
-
     {
-        "request": "Compare gold price distributions by stock index.",
+        "request": "Is there a relationship between interest rate and inflation rate?",
+        "response": {
+            "type": "scatter",
+            "data": {
+                "dimension": "Interest Rate (%)",
+                "metric": "Inflation Rate (%)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Interest rate vs inflation rate",
+            "description": "Plots interest rate against inflation rate across all observations.",
+            "explanation": "Scatter with trend line is the correct choice when the user asks about the relationship between two numeric columns.",
+        },
+    },
+    {
+        "request": "Show the spread of GDP growth by stock index.",
         "response": {
             "type": "box",
             "data": {
                 "dimension": "Stock Index",
-                "metric": "Gold Price (USD per Ounce)"
+                "metric": "GDP Growth (%)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
             },
-            "title": "Gold price distribution by stock index",
-            "description": "Compares gold price spread and outliers across stock indexes.",
-            "explanation": "Box plots summarize distribution, median, and variability between groups.",
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "GDP growth spread by stock index",
+            "description": "Displays the distribution and outliers of GDP growth rates for each stock index.",
+            "explanation": "Box plots expose variance and extremes that a mean bar chart would hide.",
         },
-    }
+    },
+    {
+        "request": "Compare total venture capital funding by stock index.",
+        "response": {
+            "type": "bar",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Venture Capital Funding (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": "sum",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Total venture capital funding by stock index",
+            "description": "Shows the total venture capital funding associated with each stock index.",
+            "explanation": "A bar chart with sum aggregation compares total accumulated values across a low-cardinality categorical dimension.",
+        },
+    },
+    {
+        "request": "Show the share of average government debt by stock index.",
+        "response": {
+            "type": "pie",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Government Debt (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Share of average government debt by stock index",
+            "description": "Shows each stock index's proportional share of average government debt.",
+            "explanation": "Pie charts are appropriate for part-of-whole comparisons across a low-cardinality categorical dimension.",
+        },
+    },
+    {
+        "request": "Show trading volume over time on a log scale.",
+        "response": {
+            "type": "line",
+            "data": {
+                "dimension": "Date",
+                "metric": "Trading Volume",
+                "metric_secondary": None,
+                "aggregation": "sum",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": True,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Trading volume over time (log scale)",
+            "description": "Tracks total trading volume across the timeline with a logarithmic y-axis.",
+            "explanation": "Trading Volume spans several orders of magnitude; log scale prevents extreme spikes from compressing lower values.",
+        },
+    },
+    {
+        "request": "Is there a correlation between real estate index and corporate profits, grouped by stock index?",
+        "response": {
+            "type": "scatter",
+            "data": {
+                "dimension": "Real Estate Index",
+                "metric": "Corporate Profits (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Real estate index vs corporate profits by stock index",
+            "description": "Plots real estate index against corporate profits, colored by stock index.",
+            "explanation": "Scatter with trend line and color reveals whether the correlation differs across market groups.",
+        },
+    },
+    {
+        "request": "Show the distribution of forex USD/JPY values.",
+        "response": {
+            "type": "histogram",
+            "data": {
+                "dimension": None,
+                "metric": "Forex USD/JPY",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": 40,
+                "top_n": None,
+            },
+            "title": "Distribution of Forex USD/JPY",
+            "description": "Shows the frequency distribution of USD/JPY exchange rate values.",
+            "explanation": "A histogram is the right tool for revealing clustering and spread in a single continuous variable.",
+        },
+    },
+    {
+        "request": "Show how gold prices evolved over time by stock index.",
+        "response": {
+            "type": "line",
+            "data": {
+                "dimension": "Date",
+                "metric": "Gold Price (USD per Ounce)",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Gold price evolution by stock index",
+            "description": "Tracks mean gold price over time for each stock index.",
+            "explanation": "Colored lines separate each index's gold price trajectory across the timeline.",
+        },
+    },
+    {
+        "request": "Which stock index has the highest average unemployment rate?",
+        "response": {
+            "type": "bar",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Unemployment Rate (%)",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Average unemployment rate by stock index",
+            "description": "Compares mean unemployment rates across stock indexes.",
+            "explanation": "A bar chart with mean aggregation is the standard approach for comparing a rate metric across categories.",
+        },
+    },
+    {
+        "request": "Show the volatility of inflation rates across stock indexes.",
+        "response": {
+            "type": "box",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Inflation Rate (%)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Inflation rate volatility by stock index",
+            "description": "Displays median, spread, and outliers of inflation rates for each stock index.",
+            "explanation": "Volatility implies variance and extremes; box plots communicate both directly.",
+        },
+    },
+    {
+        "request": "Show the top 10 dates by highest average close price.",
+        "response": {
+            "type": "bar",
+            "data": {
+                "dimension": "Date",
+                "metric": "Close Price",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": 10,
+            },
+            "title": "Top 10 dates by average close price",
+            "description": "Ranks the ten dates with the highest mean closing price.",
+            "explanation": "top_n limits the bar chart to the explicitly requested number of leading entries.",
+        },
+    },
+    {
+        "request": "Is there a relationship between forex USD/EUR and gold price?",
+        "response": {
+            "type": "scatter",
+            "data": {
+                "dimension": "Forex USD/EUR",
+                "metric": "Gold Price (USD per Ounce)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Forex USD/EUR vs gold price",
+            "description": "Plots the USD/EUR exchange rate against gold price across all observations.",
+            "explanation": "Scatter with trend line reveals whether currency strength correlates with gold valuation.",
+        },
+    },
+    {
+        "request": "Show the distribution of consumer confidence index values.",
+        "response": {
+            "type": "histogram",
+            "data": {
+                "dimension": None,
+                "metric": "Consumer Confidence Index",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": 20,
+                "top_n": None,
+            },
+            "title": "Distribution of consumer confidence index",
+            "description": "Shows how consumer confidence values are distributed across the dataset.",
+            "explanation": "Consumer Confidence Index has only 70 unique values, so a lower bin count avoids over-fragmenting the distribution.",
+        },
+    },
+    {
+        "request": "Compare average retail sales by stock index.",
+        "response": {
+            "type": "bar",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Retail Sales (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Average retail sales by stock index",
+            "description": "Compares mean retail sales levels across stock indexes.",
+            "explanation": "Bar charts with mean aggregation clearly compare average economic output across categorical groups.",
+        },
+    },
+    {
+        "request": "Show how the real estate index changed over time.",
+        "response": {
+            "type": "line",
+            "data": {
+                "dimension": "Date",
+                "metric": "Real Estate Index",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Real estate index over time",
+            "description": "Tracks the mean real estate index value across the full dataset timeline.",
+            "explanation": "A line chart is appropriate for a single indicator's temporal evolution.",
+        },
+    },
+    {
+        "request": "Show the spread of corporate profits by stock index with outliers.",
+        "response": {
+            "type": "box",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Corporate Profits (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Corporate profits spread by stock index",
+            "description": "Displays the distribution, median, and outliers of corporate profits for each stock index.",
+            "explanation": "When the user explicitly asks for outliers, box plots are preferred over any aggregated chart type.",
+        },
+    },
+    {
+        "request": "Is there a correlation between government debt and corporate profits by stock index?",
+        "response": {
+            "type": "scatter",
+            "data": {
+                "dimension": "Government Debt (Billion USD)",
+                "metric": "Corporate Profits (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Government debt vs corporate profits by stock index",
+            "description": "Plots government debt against corporate profits across all observations, colored by stock index.",
+            "explanation": "Scatter with trend line and color reveals whether the debt-profit relationship differs across market groups.",
+        },
+    },
+    {
+        "request": "Show the distribution of mergers and acquisitions deals.",
+        "response": {
+            "type": "histogram",
+            "data": {
+                "dimension": None,
+                "metric": "Mergers & Acquisitions Deals",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": 20,
+                "top_n": None,
+            },
+            "title": "Distribution of mergers and acquisitions deals",
+            "description": "Shows the frequency of M&A deal counts across all observations.",
+            "explanation": "Mergers & Acquisitions Deals has only 50 unique values, so a lower bin count produces clean, readable buckets without over-fragmenting.",
+        },
+    },
+    {
+        "request": "How many records exist per stock index?",
+        "response": {
+            "type": "bar",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Close Price",
+                "metric_secondary": None,
+                "aggregation": "count",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Record count by stock index",
+            "description": "Shows the number of observations available for each stock index.",
+            "explanation": "Count aggregation on a bar chart is the correct choice when the user asks how many records exist per category.",
+        },
+    },
+    {
+        "request": "Show the relationship between crude oil price and gold price on a log scale.",
+        "response": {
+            "type": "scatter",
+            "data": {
+                "dimension": "Crude Oil Price (USD per Barrel)",
+                "metric": "Gold Price (USD per Ounce)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": True,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Crude oil price vs gold price (log scale)",
+            "description": "Plots crude oil price against gold price with a logarithmic y-axis to handle value range differences.",
+            "explanation": "Log scale is appropriate when the metric spans a wide numeric range; trend line surfaces the directional relationship.",
+        },
+    },
+    {
+        "request": "Show the distribution of retail sales with high granularity.",
+        "response": {
+            "type": "histogram",
+            "data": {
+                "dimension": None,
+                "metric": "Retail Sales (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": 60,
+                "top_n": None,
+            },
+            "title": "Distribution of retail sales",
+            "description": "Shows the frequency distribution of retail sales values at fine resolution.",
+            "explanation": "Retail Sales has nearly 2600 unique values across 3000 rows; a higher bin count reveals subtle clustering in the distribution.",
+        },
+    },
+    {
+        "request": "Compare the average interest rate over time by stock index.",
+        "response": {
+            "type": "line",
+            "data": {
+                "dimension": "Date",
+                "metric": "Interest Rate (%)",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Average interest rate over time by stock index",
+            "description": "Tracks mean interest rate across the timeline separated by stock index.",
+            "explanation": "Color by Stock Index separates each group's monetary environment trajectory on the same time axis.",
+        },
+    },
+    {
+        "request": "Show the top 5 stock indexes by total mergers and acquisitions deals.",
+        "response": {
+            "type": "bar",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Mergers & Acquisitions Deals",
+                "metric_secondary": None,
+                "aggregation": "sum",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": 5,
+            },
+            "title": "Top 5 stock indexes by total M&A deals",
+            "description": "Ranks the five stock indexes with the highest total number of mergers and acquisitions deals.",
+            "explanation": "top_n is set because the user explicitly requested a ranking of the top 5 entries.",
+        },
+    },
+    {
+        "request": "Show the variance of daily low prices across stock indexes.",
+        "response": {
+            "type": "box",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Daily Low",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Daily low price variance by stock index",
+            "description": "Displays the spread and outliers of daily low prices for each stock index.",
+            "explanation": "Variance implies distribution shape and extremes; box plots communicate both without collapsing the data into a single aggregate.",
+        },
+    },
+    {
+        "request": "Show the share of total consumer spending by stock index.",
+        "response": {
+            "type": "pie",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Consumer Spending (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": "sum",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Share of total consumer spending by stock index",
+            "description": "Shows each stock index's proportional contribution to total consumer spending.",
+            "explanation": "Pie charts are the correct choice for part-of-whole questions on a low-cardinality categorical dimension.",
+        },
+    },
+    {
+        "request": "Is there a relationship between unemployment rate and bankruptcy rate by stock index?",
+        "response": {
+            "type": "scatter",
+            "data": {
+                "dimension": "Unemployment Rate (%)",
+                "metric": "Bankruptcy Rate (%)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": "Stock Index",
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": True,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Unemployment rate vs bankruptcy rate by stock index",
+            "description": "Plots unemployment rate against bankruptcy rate across all observations, colored by stock index.",
+            "explanation": "Scatter with trend line reveals whether higher unemployment predicts higher bankruptcy rates; color separates market groups.",
+        },
+    },
+    {
+        "request": "Show how consumer spending evolved over time.",
+        "response": {
+            "type": "line",
+            "data": {
+                "dimension": "Date",
+                "metric": "Consumer Spending (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": "mean",
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": None,
+                "top_n": None,
+            },
+            "title": "Consumer spending over time",
+            "description": "Tracks mean consumer spending across the full dataset timeline.",
+            "explanation": "A single-line chart without color is appropriate when the user asks about one metric's temporal evolution with no grouping requested.",
+        },
+    },
+    {
+        "request": "Show the distribution of government debt values.",
+        "response": {
+            "type": "histogram",
+            "data": {
+                "dimension": None,
+                "metric": "Government Debt (Billion USD)",
+                "metric_secondary": None,
+                "aggregation": None,
+                "color": None,
+            },
+            "render_options": {
+                "log_scale_y": False,
+                "show_trend_line": False,
+                "nbins": 40,
+                "top_n": None,
+            },
+            "title": "Distribution of government debt",
+            "description": "Shows how government debt values are distributed across all observations.",
+            "explanation": "Government Debt has nearly 2850 unique values; 40 bins balances resolution against readability for a broadly distributed numeric column.",
+        },
+    },
 ]

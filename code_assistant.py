@@ -11,9 +11,7 @@ except Exception:
     AutoTokenizer = None
     torch = None
 
-
 DEFAULT_MODEL_NAME = os.getenv("BASE_MODEL", "Qwen/Qwen2.5-Coder-1.5B-Instruct")
-
 
 class CodeAssistant:
     def __init__(self, model_name: str = DEFAULT_MODEL_NAME) -> None:
@@ -51,7 +49,7 @@ class CodeAssistant:
                 **model_kwargs,
             )
             self._load_error = None
-        except Exception as exc:  # pragma: no cover - depends on local model setup
+        except Exception as exc:
             self._tokenizer = None
             self._model = None
             self._load_error = str(exc)
@@ -89,6 +87,7 @@ class CodeAssistant:
             prompt_text = f"System:\n{system_prompt}\n\nUser:\n{user_prompt}\n\nAssistant:\n"
 
         inputs = self._tokenizer(prompt_text, return_tensors="pt")
+        
         model_device = next(self._model.parameters()).device
         inputs = {key: value.to(model_device) for key, value in inputs.items()}
 

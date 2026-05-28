@@ -1,7 +1,8 @@
 /venv
 /__pycache__
+*/__pycache__
 /outputs
 /.streamlit
 /desenrola_model
 /desenrola_model_1.5B
-/financial_model
+/financial_adapter
