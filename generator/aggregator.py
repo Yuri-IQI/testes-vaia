@@ -8,7 +8,15 @@ from pandas.api.types import is_datetime64_any_dtype, is_numeric_dtype
 from generator.dataset import _dataframe_to_records
 from generator.models import VisualizationSpec
 
+def _apply_filters(frame: pd.DataFrame, filters: dict) -> pd.DataFrame:
+    for column, values in filters.items():
+        if column in frame.columns:
+            frame = frame[frame[column].isin(values)]
+    return frame
+
 def aggregate_for_visualization(frame: pd.DataFrame, spec: VisualizationSpec) -> pd.DataFrame:
+    frame = _apply_filters(frame, spec.data.filters)
+    
     chart_type = spec.chart_type
     dimension = spec.data.dimension
     metric = spec.data.metric

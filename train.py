@@ -20,7 +20,7 @@ config = FinancialFineTuneConfig(
     gradient_accumulation_steps=8,
     max_seq_length=512,
     lora_r=8,
-    num_train_epochs=10,
+    num_train_epochs=12,
 )
 
 trainer = FinancialModelTrainer(config)

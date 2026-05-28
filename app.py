@@ -20,22 +20,8 @@ SAMPLE_DATASET_PATH = (
     / "sample_data"
     / os.getenv("DEFAULT_DATASET_NAME", "finance_economics_dataset.csv")
 )
-DEFAULT_ADAPTER    = os.getenv("DEFAULT_ADAPTER", "financial_adapter")
+DEFAULT_ADAPTER = os.getenv("DEFAULT_ADAPTER", "financial_adapter")
 DEFAULT_MODEL_NAME = os.getenv("BASE_MODEL", "Qwen/Qwen2.5-0.5B-Instruct")
-
-SUGGESTED_PROMPTS = [
-    "Show the evolution of crude oil prices over time.",
-    "Compare average close price by stock index.",
-    "Show the distribution of trading volume.",
-    "Is there a correlation between gold price and real estate index?",
-    "Show the spread of GDP growth by stock index.",
-    "What is the share of total retail sales by stock index?",
-    "Show trading volume over time grouped by stock index.",
-    "Show the top 5 stock indexes by average corporate profits.",
-    "Is there a relationship between inflation rate and unemployment rate?",
-    "Show the variance of interest rates across stock indexes.",
-]
-
 
 class FineTunedAssistant(CodeAssistant):
     def __init__(self, adapter_path: str | None = None, model_name: str = DEFAULT_MODEL_NAME) -> None:
@@ -52,8 +38,8 @@ class FineTunedAssistant(CodeAssistant):
 @st.cache_resource
 def load_pipeline() -> ChartPipeline:
     assistant = FineTunedAssistant(
-        adapter_path=DEFAULT_ADAPTER,
         model_name=DEFAULT_MODEL_NAME,
+        adapter_path=DEFAULT_ADAPTER
     )
     return ChartPipeline(assistant=assistant)
 
@@ -67,13 +53,9 @@ def load_sample_dataset_bytes() -> bytes:
     return SAMPLE_DATASET_PATH.read_bytes()
 
 
-def resolve_dataset(uploaded_file, use_sample: bool):
+def resolve_dataset():
     try:
-        if uploaded_file is not None:
-            return load_csv_dataset(uploaded_file.getvalue()), uploaded_file.name, None
-        if use_sample:
-            return load_sample_dataset(), SAMPLE_DATASET_PATH.name, None
-        return None, None, None
+        return load_sample_dataset(), SAMPLE_DATASET_PATH.name, None
     except Exception as exc:
         return None, None, str(exc)
 
@@ -88,7 +70,6 @@ with st.sidebar:
     st.divider()
 
     st.header("Dataset")
-    use_sample = st.checkbox("Use built-in sample dataset", value=True)
     st.download_button(
         "Download sample dataset",
         data=load_sample_dataset_bytes(),
@@ -96,22 +77,11 @@ with st.sidebar:
         mime="text/csv",
     )
 
-    st.divider()
-
-    st.header("Suggested prompts")
-    for prompt in SUGGESTED_PROMPTS:
-        st.caption(f"• {prompt}")
-
 st.title("VAIA — Financial Dataset Assistant")
-st.caption(
-    "Upload a CSV, describe what you want to see in natural language, "
-    "and get a chart built exclusively from the dataset's real columns."
-)
 
 pipeline = load_pipeline()
 
-uploaded_file = st.file_uploader("Upload CSV dataset", type=["csv"])
-dataset, dataset_name, dataset_error = resolve_dataset(uploaded_file, use_sample)
+dataset, dataset_name, dataset_error = resolve_dataset()
 
 if dataset_error:
     st.error(f"Could not load dataset: {dataset_error}")
@@ -126,7 +96,7 @@ else:
     col_c.metric("Dataset", dataset_name)
 
     with st.expander("Dataset preview", expanded=True):
-        st.dataframe(dataset.head(20), use_container_width=True)
+        st.dataframe(dataset.head(20), width='stretch')
 
     with st.expander("Dataset summary"):
         st.json(summary)
@@ -166,7 +136,7 @@ if generate:
                     for warning in result.warnings:
                         st.warning(warning)
 
-                st.plotly_chart(figure, use_container_width=True)
+                st.plotly_chart(figure, width='stretch')
 
                 spec_col, data_col = st.columns(2)
 
@@ -176,7 +146,7 @@ if generate:
 
                 with data_col:
                     st.subheader("Aggregated data")
-                    st.dataframe(result.plot_frame, use_container_width=True)
+                    st.dataframe(result.plot_frame, width='stretch')
 
                 with st.expander("Raw model response"):
                     st.code(result.raw_response or "No raw response.", language="json")

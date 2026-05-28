@@ -4,11 +4,12 @@ import pandas as pd
 
 @dataclass
 class VisualizationDataSpec:
-    dimension: str
+    dimension: str | None
     metric: str
-    metric_secondary: str
-    aggregation: str
+    metric_secondary: str | None
+    aggregation: str | None
     color: str | None = None
+    filters: dict[str, list[str]] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         payload = {
@@ -22,6 +23,9 @@ class VisualizationDataSpec:
 
         if self.color:
             payload["color"] = self.color
+        
+        if self.filters:
+            payload["filters"] = self.filters
 
         return payload
 
@@ -64,6 +68,7 @@ class VisualizationSpec:
                 aggregation=data.get("aggregation"),
                 color=data.get("color"),
                 metric_secondary=data.get("metric_secondary"),
+                filters=data.get("filters")
             ),
             title=payload["title"],
             description=payload["description"],
