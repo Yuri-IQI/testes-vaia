@@ -1,9 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-import json
 import pandas as pd
 from code_assistant import CodeAssistant
-from examples import EXAMPLES
 from generator.aggregator import aggregate_for_visualization, build_frontend_records
 from generator.dataset import summarize_dataframe
 from generator.fallback_inferrer import infer_visualization_spec
@@ -36,7 +34,7 @@ Never put column values in the color field.
     "metric": "column",
     "metric_secondary": "column or null",
     "aggregation": "sum|mean|count|null",
-    "color": "column or null"
+    "color": "column or null",
     "filters": {"column": ["value1", "value2"]} or {}
   },
   "render_options": {
@@ -81,19 +79,15 @@ class ChartPipeline:
             feedback = warnings[-1] if warnings else ""
                         
             # TODO: Substituir
-            # prompt = build_prompt(summary, user_prompt, feedback)
-
-            # print(prompt)
+            prompt = build_prompt(summary, user_prompt, feedback)
 
             try:
-                # raw_response = self.assistant.generate_text(
-                #    VISUALIZATION_SYSTEM_PROMPT,
-                #    prompt,
-                #    max_new_tokens=600,
-                #    temperature=0.1,
-                # )
-                raw_response = json.dumps(EXAMPLES[0]["response"])
-                
+                raw_response = self.assistant.generate_text(
+                    VISUALIZATION_SYSTEM_PROMPT,
+                    prompt,
+                    max_new_tokens=600,
+                    temperature=0.1,
+                )
             except RuntimeError as exc:
                 warnings.append(f"Model unavailable: {exc}")
                 break

@@ -43,7 +43,7 @@ def build_few_shots_block() -> str:
 EXAMPLES = [
     {
         "request": "Show the distribution of crude oil prices.",
-        "response": json.dumps({
+        "response": {
             "type": "histogram",
             "data": {
                 "dimension": None,
@@ -51,7 +51,6 @@ EXAMPLES = [
                 "metric_secondary": None,
                 "aggregation": None,
                 "color": None,
-                "filters": {},
             },
             "render_options": {
                 "log_scale_y": False,
@@ -60,12 +59,15 @@ EXAMPLES = [
                 "top_n": None,
             },
             "title": "Distribution of crude oil prices",
-            "description": "Shows how crude oil prices are spread across the dataset.",
+            "description": (
+                "Shows how crude oil prices are spread "
+                "across the dataset."
+            ),
             "explanation": (
                 "A histogram reveals the frequency distribution "
                 "of a single numeric column."
             ),
-        })
+        },
     },
     {
         "request": "Show the spread of close prices by stock index.",
