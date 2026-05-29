@@ -1,9 +1,9 @@
 ---
-base_model: Qwen/Qwen2.5-Coder-0.5B-Instruct
+base_model: Qwen/Qwen2.5-0.5B-Instruct
 library_name: peft
 model_name: financial_adapter
 tags:
-- base_model:adapter:Qwen/Qwen2.5-Coder-0.5B-Instruct
+- base_model:adapter:Qwen/Qwen2.5-0.5B-Instruct
 - lora
 - sft
 - transformers
@@ -14,7 +14,7 @@ pipeline_tag: text-generation
 
 # Model Card for financial_adapter
 
-This model is a fine-tuned version of [Qwen/Qwen2.5-Coder-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct).
+This model is a fine-tuned version of [Qwen/Qwen2.5-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct).
 It has been trained using [TRL](https://github.com/huggingface/trl).
 
 ## Quick start
