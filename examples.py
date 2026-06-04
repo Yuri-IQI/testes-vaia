@@ -5,48 +5,50 @@ import json
 
 VISUALIZATION_EXAMPLES = [
     {
-        "request": "Compare total sales by country in a bar chart and split the bars by product line.",
-        "response": {
-            "type": "bar",
-            "data": {
-                "dimension": "COUNTRY",
-                "metric": "SALES",
-                "aggregation": "sum",
-                "color": "PRODUCTLINE",
-            },
-            "title": "Total sales by country and product line",
-            "description": "Compares total sales across countries while separating each product line.",
-            "explanation": "A bar chart works well for category comparisons, and color separates product lines within each country.",
-        },
-    },
-    {
-        "request": "Show the sales trend over time in a line chart.",
+        "request": "Show how crude oil prices evolved over time.",
         "response": {
             "type": "line",
             "data": {
-                "dimension": "ORDERDATE",
-                "metric": "SALES",
-                "aggregation": "sum",
+                "dimension": "Date",
+                "metric": "Crude Oil Price (USD per Barrel)",
+                "aggregation": "mean",
+                "color": None,
             },
-            "title": "Sales trend over time",
-            "description": "Shows how total sales evolve over time.",
-            "explanation": "A line chart is appropriate for time-based trends using the existing date and sales columns.",
+            "title": "Crude oil price evolution over time",
+            "description": "Tracks the mean crude oil price across the full dataset timeline.",
+            "explanation": "A line chart is the natural choice for a single numeric indicator evolving over a datetime dimension.",
         },
     },
     {
-        "request": "Show how each product line contributes to total sales in a pie chart.",
+        "request": "Compare average consumer spending by stock index.",
+        "response": {
+            "type": "bar",
+            "data": {
+                "dimension": "Stock Index",
+                "metric": "Consumer Spending (Billion USD)",
+                "aggregation": "mean",
+                "color": None,
+            },
+            "title": "Average consumer spending by stock index",
+            "description": "Compares mean consumer spending levels across stock indexes.",
+            "explanation": "A bar chart with mean aggregation is the standard choice for comparing a numeric metric across a categorical dimension.",
+        },
+    },
+    {
+        "request": "Show the share of total retail sales by stock index.",
         "response": {
             "type": "pie",
             "data": {
-                "dimension": "PRODUCTLINE",
-                "metric": "SALES",
+                "dimension": "Stock Index",
+                "metric": "Retail Sales (Billion USD)",
                 "aggregation": "sum",
+                "color": None,
             },
-            "title": "Sales share by product line",
-            "description": "Displays the proportion of total sales for each product line.",
-            "explanation": "A pie chart emphasizes part-to-whole composition when grouping sales by product line.",
+            "title": "Share of total retail sales by stock index",
+            "description": "Shows each stock index's proportional contribution to total retail sales.",
+            "explanation": "Pie charts communicate part-of-whole relationships for low-cardinality categorical dimensions.",
         },
-    },
+    }
 ]
 
 

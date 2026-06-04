@@ -103,7 +103,9 @@ if generate:
         st.error("Digite um pedido para gerar o gráfico.")
     else:
         try:
+            print(user_prompt)
             result = pipeline.generate_visualization(dataset, user_prompt)
+            print(result.spec)
             figure = build_plotly_figure(result.plot_frame, result.spec)
 
             st.info(f"Fonte da especificação: {result.source}")

@@ -80,6 +80,7 @@ class ChartPipeline:
         for attempt in range(1, retries + 2):
             feedback = warnings[-1] if warnings else ""
             prompt = self._build_prompt(summary, user_prompt, feedback)
+            print(prompt)
 
             try:
                 raw_response = self.assistant.generate_text(
